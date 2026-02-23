@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes - Veterinaria CM</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <nav>
+  
+  <a href="clientes.html">Clientes</a>
+  <a href="mascotas.html">Mascotas</a>
+</nav>
+
+
+  <h1>Gestión de Clientes</h1>
+
+  <form id="formCliente">
+    <label>Nombre:</label>
+    <input type="text" id="nombre">
+
+    <label>Teléfono:</label>
+    <input type="text" id="telefono">
+
+    <label>Correo:</label>
+    <input type="email" id="correo">
+
+    <button type="submit">Crear Cliente</button>
+  </form>
+
+  <h2>Listado de Clientes</h2>
+  <ul id="listaClientes"></ul>
+
+  <script src="js/clientesService.js"></script>
+
+  <script>
+    async function cargarClientes() {
+      const clientes = await obtenerClientes();
+      const lista = document.getElementById("listaClientes");
+      lista.innerHTML = "";
+
+      clientes.forEach(cliente => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${cliente.nombre}</strong><br>
+          Tel: ${cliente.telefono} | Correo: ${cliente.correo}
+          <br>
+          <button onclick="eliminar(${cliente.id})">Eliminar</button>
+          <button onclick="editar(${cliente.id})">Editar</button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    async function eliminar(id) {
+      await eliminarCliente(id);
+      cargarClientes();
+    }
+
+    async function editar(id) {
+      const clientes = await obtenerClientes();
+      const cliente = clientes.find(c => c.id === id);
+
+      document.getElementById("nombre").value = cliente.nombre;
+      document.getElementById("telefono").value = cliente.telefono;
+      document.getElementById("correo").value = cliente.correo;
+
+      const btn = document.querySelector("button[type='submit']");
+      btn.textContent = "Actualizar Cliente";
+
+      btn.onclick = async (e) => {
+        e.preventDefault();
+
+        const datos = {
+          nombre: document.getElementById("nombre").value,
+          telefono: document.getElementById("telefono").value,
+          correo: document.getElementById("correo").value
+        };
+
+        await editarCliente(id, datos);
+
+        btn.textContent = "Crear Cliente";
+        btn.onclick = null;
+
+        cargarClientes();
+      };
+    }
+
+    document.getElementById("formCliente").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nuevo = {
+        nombre: document.getElementById("nombre").value,
+        telefono: document.getElementById("telefono").value,
+        correo: document.getElementById("correo").value
+      };
+
+      await crearCliente(nuevo);
+      cargarClientes();
+    });
+
+    cargarClientes();
+  </script>
+
+</body>
+</html>

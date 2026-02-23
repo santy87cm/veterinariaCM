@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mascotas - Veterinaria CM</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <nav>
+  
+  <a href="clientes.html">Clientes</a>
+  <a href="mascotas.html">Mascotas</a>
+</nav>
+
+
+ <h1>Gestión de Mascotas</h1>
+
+  <form id="formMascota">
+    <label>Nombre:</label>
+    <input type="text" id="nombre">
+
+    <label>Especie:</label>
+    <input type="text" id="especie">
+
+    <label>Raza:</label>
+    <input type="text" id="raza">
+
+    <label>ID Cliente (Dueño):</label>
+    <input type="number" id="cliente_id">
+
+    <button type="submit">Crear Mascota</button>
+  </form>
+
+  <h2>Listado de Mascotas</h2>
+  <ul id="listaMascotas"></ul>
+
+  <script src="js/mascotasService.js"></script>
+
+  <script>
+    async function cargarMascotas() {
+      const mascotas = await obtenerMascotas();
+      const lista = document.getElementById("listaMascotas");
+      lista.innerHTML = "";
+
+      mascotas.forEach(mascota => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${mascota.nombre}</strong> (${mascota.especie} - ${mascota.raza})<br>
+          Dueño ID: ${mascota.cliente_id}
+          <br>
+          <button onclick="eliminar(${mascota.id})">Eliminar</button>
+          <button onclick="editar(${mascota.id})">Editar</button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    async function eliminar(id) {
+      await eliminarMascota(id);
+      cargarMascotas();
+    }
+
+    async function editar(id) {
+      const mascotas = await obtenerMascotas();
+      const mascota = mascotas.find(m => m.id === id);
+
+      document.getElementById("nombre").value = mascota.nombre;
+      document.getElementById("especie").value = mascota.especie;
+      document.getElementById("raza").value = mascota.raza;
+      document.getElementById("cliente_id").value = mascota.cliente_id;
+
+      const btn = document.querySelector("button[type='submit']");
+      btn.textContent = "Actualizar Mascota";
+
+      btn.onclick = async (e) => {
+        e.preventDefault();
+
+        const datos = {
+          nombre: document.getElementById("nombre").value,
+          especie: document.getElementById("especie").value,
+          raza: document.getElementById("raza").value,
+          cliente_id: document.getElementById("cliente_id").value
+        };
+
+        await editarMascota(id, datos);
+
+        btn.textContent = "Crear Mascota";
+        btn.onclick = null;
+
+        cargarMascotas();
+      };
+    }
+
+    document.getElementById("formMascota").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nueva = {
+        nombre: document.getElementById("nombre").value,
+        especie: document.getElementById("especie").value,
+        raza: document.getElementById("raza").value,
+        cliente_id: document.getElementById("cliente_id").value
+      };
+
+      await crearMascota(nueva);
+      cargarMascotas();
+    });
+
+    cargarMascotas();
+  </script>
+
+</body>
+</html>
